@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servico-pedidos
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: servico-pedidos
+  template:
+    metadata:
+      labels:
+        app: servico-pedidos
+    spec:
+      containers:
+      - name: pedidos
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pedidos-service
+spec:
+  selector:
+    app: servico-pedidos
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

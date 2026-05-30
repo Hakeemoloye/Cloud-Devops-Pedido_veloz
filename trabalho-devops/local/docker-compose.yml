@@ -1,0 +1,56 @@
+version: '3.8'
+
+networks:
+  pedidos_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pv-database
+    environment:
+      POSTGRES_DB: pedidos_db
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pedidos_net
+
+  api-gateway:
+    image: nginx:alpine
+    container_name: pv-api-gateway
+    ports:
+      - "8080:80"
+    networks:
+      - pedidos_net
+
+  servico-pedidos:
+    image: alpine
+    container_name: pv-servico-pedidos
+    command: sh -c "while true; do echo 'Servico de Pedidos Rodando...'; sleep 10; done"
+    environment:
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - pedidos_net
+
+  servico-pagamentos:
+    image: alpine
+    container_name: pv-servico-pagamentos
+    command: sh -c "while true; do echo 'Servico de Pagamentos Rodando...'; sleep 10; done"
+    networks:
+      - pedidos_net
+
+  servico-estoque:
+    image: alpine
+    container_name: pv-servico-estoque
+    command: sh -c "while true; do echo 'Servico de Estoque Rodando...'; sleep 10; done"
+    networks:
+      - pedidos_net
